@@ -1,3 +1,4 @@
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -5,4 +6,139 @@ generator client {
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+enum CourseCategory {
+  IELTS
+  TOEFL
+  GRE
+  SPOKEN_ENGLISH
+  OTHER
+}
+
+enum EnrollmentStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum ConsultationStatus {
+  NEW
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  NOT_REQUIRED
+  PENDING
+  PAID
+  FAILED
+}
+
+model User {
+  id              String                 @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  email           String                 @unique
+  password        String
+  role            UserRole               @default(STUDENT)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  enrollments     Enrollment[]
+  applications    Application[]
+  consultations   ConsultationBooking[]
+}
+
+model Course {
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  description    String
+  price          Float
+  category       CourseCategory
+  thumbnailUrl   String?
+  instructorName String
+  rating         Float?
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  enrollments    Enrollment[]
+}
+
+model Destination {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  imageUrl         String?
+  shortDescription String?
+  universityCount  Int?
+  costRange        String?
+  workPermitRules  String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  universities     University[]
+}
+
+model University {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  location      String
+  ranking       Int?
+  destinationId String         @db.ObjectId
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  destination   Destination    @relation(fields: [destinationId], references: [id])
+  applications  Application[]
+}
+
+model Application {
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String            @db.ObjectId
+  universityId   String            @db.ObjectId
+  status         ApplicationStatus
+  intendedIntake String?
+  notes          String?
+  documents      Json?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  user           User              @relation(fields: [userId], references: [id])
+  university     University        @relation(fields: [universityId], references: [id])
+}
+
+model Enrollment {
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String           @db.ObjectId
+  courseId         String           @db.ObjectId
+  status           EnrollmentStatus @default(PENDING)
+  paymentStatus    PaymentStatus    @default(NOT_REQUIRED)
+  paymentReference String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  user             User             @relation(fields: [userId], references: [id])
+  course           Course           @relation(fields: [courseId], references: [id])
+}
+
+model ConsultationBooking {
+  id            String             @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String?            @db.ObjectId
+  name          String
+  email         String
+  phone         String?
+  message       String?
+  preferredDate DateTime?
+  status        ConsultationStatus @default(NEW)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  user          User?              @relation(fields: [userId], references: [id])
 }
