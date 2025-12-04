@@ -16,9 +16,11 @@
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "latest",
+    "bcryptjs": "latest",
     "cors": "latest",
     "dotenv": "latest",
     "express": "latest",
+    "jsonwebtoken": "latest",
     "morgan": "latest"
   },
   "devDependencies": {
