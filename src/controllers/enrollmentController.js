@@ -1,4 +1,5 @@
-const prisma = require('../config/prismaClient');
+const Course = require('../models/Course');
+const Enrollment = require('../models/Enrollment');
 const ApiError = require('../utils/ApiError');
 
 const initiateEnrollment = async (req, res, next) => {
@@ -9,32 +10,28 @@ const initiateEnrollment = async (req, res, next) => {
       return next(new ApiError(400, 'Course ID is required'));
     }
 
-    const course = await prisma.course.findUnique({ where: { id: courseId } });
+    const course = await Course.findById(courseId);
 
     if (!course) {
       return next(new ApiError(404, 'Course not found'));
     }
 
-    const existing = await prisma.enrollment.findFirst({
-      where: {
-        userId: req.user.id,
-        courseId,
-        status: { in: ['ACTIVE', 'COMPLETED'] },
-      },
+    const existing = await Enrollment.findOne({
+      userId: req.user.id,
+      courseId,
+      status: { $in: ['ACTIVE', 'COMPLETED'] },
     });
 
     if (existing) {
       return next(new ApiError(400, 'You are already enrolled in this course'));
     }
 
-    const enrollment = await prisma.enrollment.create({
-      data: {
-        userId: req.user.id,
-        courseId,
-        status: 'PENDING',
-        paymentStatus: 'PENDING',
-        paymentReference: null,
-      },
+    const enrollment = await Enrollment.create({
+      userId: req.user.id,
+      courseId,
+      status: 'PENDING',
+      paymentStatus: 'PENDING',
+      paymentReference: null,
     });
 
     res.status(201).json({
@@ -52,13 +49,13 @@ const confirmPayment = async (req, res, next) => {
     const { id } = req.params;
     const { paymentMethod, transactionId } = req.body;
 
-    const enrollment = await prisma.enrollment.findUnique({ where: { id } });
+    const enrollment = await Enrollment.findById(id);
 
     if (!enrollment) {
       return next(new ApiError(404, 'Enrollment not found'));
     }
 
-    if (enrollment.userId !== req.user.id) {
+    if (enrollment.userId.toString() !== req.user.id) {
       return next(new ApiError(403, 'You are not allowed to modify this enrollment'));
     }
 
@@ -69,14 +66,15 @@ const confirmPayment = async (req, res, next) => {
     const reference =
       (paymentMethod ? `${paymentMethod}-` : '') + (transactionId || `DEMO-${Date.now()}`);
 
-    const updatedEnrollment = await prisma.enrollment.update({
-      where: { id },
-      data: {
+    const updatedEnrollment = await Enrollment.findByIdAndUpdate(
+      id,
+      {
         status: 'ACTIVE',
         paymentStatus: 'PAID',
         paymentReference: reference,
       },
-    });
+      { new: true }
+    );
 
     res.json({
       status: 'success',
@@ -90,10 +88,17 @@ const confirmPayment = async (req, res, next) => {
 
 const getMyEnrollments = async (req, res, next) => {
   try {
-    const enrollments = await prisma.enrollment.findMany({
-      where: { userId: req.user.id },
-      include: { course: true },
-      orderBy: { createdAt: 'desc' },
+    const enrollmentsRaw = await Enrollment.find({ userId: req.user.id })
+      .populate('courseId')
+      .sort({ createdAt: -1 });
+
+    const enrollments = enrollmentsRaw.map((enrollment) => {
+      const obj = enrollment.toObject({ virtuals: true });
+      if (obj.courseId) {
+        obj.course = obj.courseId;
+        delete obj.courseId;
+      }
+      return obj;
     });
 
     res.json({
@@ -108,13 +113,13 @@ const getMyEnrollments = async (req, res, next) => {
 const cancelEnrollment = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const enrollment = await prisma.enrollment.findUnique({ where: { id } });
+    const enrollment = await Enrollment.findById(id);
 
     if (!enrollment) {
       return next(new ApiError(404, 'Enrollment not found'));
     }
 
-    if (enrollment.userId !== req.user.id) {
+    if (enrollment.userId.toString() !== req.user.id) {
       return next(new ApiError(403, 'You are not allowed to modify this enrollment'));
     }
 
@@ -122,13 +127,14 @@ const cancelEnrollment = async (req, res, next) => {
       return next(new ApiError(400, 'Only pending enrollments can be cancelled'));
     }
 
-    const updatedEnrollment = await prisma.enrollment.update({
-      where: { id },
-      data: {
+    const updatedEnrollment = await Enrollment.findByIdAndUpdate(
+      id,
+      {
         status: 'CANCELLED',
         paymentStatus: 'FAILED',
       },
-    });
+      { new: true }
+    );
 
     res.json({
       status: 'success',
