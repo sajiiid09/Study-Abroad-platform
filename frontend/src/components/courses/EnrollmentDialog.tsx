@@ -8,14 +8,14 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 
 interface Course {
-  id: number;
+  _id: string;
   title: string;
   category: string;
   duration: string;
-  students: number;
+  studentCount: number;
   rating: number;
   price: number;
-  image: string;
+  thumbnailUrl: string;
   description: string;
 }
 
@@ -113,7 +113,7 @@ export const EnrollmentDialog = ({ course, open, onOpenChange }: EnrollmentDialo
           <div className="space-y-6">
             <div className="relative aspect-video rounded-lg overflow-hidden">
               <img
-                src={course.image}
+                src={course.thumbnailUrl}
                 alt={course.title}
                 className="w-full h-full object-cover"
               />
@@ -131,7 +131,7 @@ export const EnrollmentDialog = ({ course, open, onOpenChange }: EnrollmentDialo
               </div>
               <div className="flex items-center gap-1">
                 <Users className="w-4 h-4" />
-                <span>{course.students.toLocaleString()} students</span>
+                <span>{course.studentCount?.toLocaleString?.() || course.studentCount} students</span>
               </div>
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 text-accent fill-accent" />
