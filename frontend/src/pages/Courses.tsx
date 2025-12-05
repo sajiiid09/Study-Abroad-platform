@@ -1,98 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, Star, BookOpen, Filter, Search } from "lucide-react";
+import { Clock, Users, Star, Search } from "lucide-react";
 import { EnrollmentDialog } from "@/components/courses/EnrollmentDialog";
+import { getCourses } from "@/services/api";
 
 interface Course {
-  id: number;
+  _id: string;
   title: string;
   category: string;
   duration: string;
-  students: number;
+  studentCount: number;
   rating: number;
   price: number;
-  image: string;
+  thumbnailUrl: string;
   description: string;
 }
-
-const courses: Course[] = [
-  {
-    id: 1,
-    title: "IELTS Preparation Course",
-    category: "Language",
-    duration: "8 weeks",
-    students: 2500,
-    rating: 4.9,
-    price: 299,
-    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80",
-    description: "Comprehensive IELTS preparation with expert instructors and practice tests.",
-  },
-  {
-    id: 2,
-    title: "TOEFL Mastery Program",
-    category: "Language",
-    duration: "10 weeks",
-    students: 1800,
-    rating: 4.8,
-    price: 349,
-    image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80",
-    description: "Master all sections of TOEFL with proven strategies and techniques.",
-  },
-  {
-    id: 3,
-    title: "GRE Complete Prep",
-    category: "Test Prep",
-    duration: "12 weeks",
-    students: 1200,
-    rating: 4.7,
-    price: 449,
-    image: "https://images.unsplash.com/photo-1513258496099-48168024aec0?w=800&q=80",
-    description: "Intensive GRE preparation covering Verbal, Quantitative, and Analytical Writing.",
-  },
-  {
-    id: 4,
-    title: "SAT Prep Bootcamp",
-    category: "Test Prep",
-    duration: "6 weeks",
-    students: 3200,
-    rating: 4.9,
-    price: 279,
-    image: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=800&q=80",
-    description: "Fast-track SAT preparation with score improvement guarantee.",
-  },
-  {
-    id: 5,
-    title: "Academic Writing Skills",
-    category: "Academic",
-    duration: "4 weeks",
-    students: 950,
-    rating: 4.6,
-    price: 199,
-    image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80",
-    description: "Develop essential academic writing skills for university success.",
-  },
-  {
-    id: 6,
-    title: "Study Abroad Counseling",
-    category: "Counseling",
-    duration: "Personalized",
-    students: 5000,
-    rating: 5.0,
-    price: 599,
-    image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80",
-    description: "One-on-one counseling sessions with expert advisors.",
-  },
-];
 
 const categories = ["All", "Language", "Test Prep", "Academic", "Counseling"];
 
 const Courses = () => {
+  const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await getCourses();
+        setCourses(response.data.data.courses);
+      } catch (error) {
+        console.error("Failed to fetch courses", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   const handleEnrollClick = (course: Course) => {
     setSelectedCourse(course);
@@ -104,6 +53,14 @@ const Courses = () => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="text-center py-10">Loading courses...</div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -165,7 +122,7 @@ const Courses = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredCourses.map((course, index) => (
               <motion.div
-                key={course.id}
+                key={course._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -173,7 +130,7 @@ const Courses = () => {
               >
                 <div className="relative aspect-video overflow-hidden">
                   <img
-                    src={course.image}
+                    src={course.thumbnailUrl}
                     alt={course.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
@@ -197,7 +154,7 @@ const Courses = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="w-4 h-4" />
-                      <span>{course.students.toLocaleString()}</span>
+                      <span>{course.studentCount?.toLocaleString?.() || course.studentCount}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 text-accent fill-accent" />
