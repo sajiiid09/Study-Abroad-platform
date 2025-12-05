@@ -1,12 +1,12 @@
-const prisma = require('../config/prismaClient');
+const Destination = require('../models/Destination');
+const University = require('../models/University'); // [Fix] Essential for population
 const ApiError = require('../utils/ApiError');
 
 const getDestinations = async (req, res, next) => {
   try {
-    const destinations = await prisma.destination.findMany({
-      include: { universities: true },
-      orderBy: { createdAt: 'desc' },
-    });
+    const destinations = await Destination.find()
+      .populate('universities')
+      .sort({ createdAt: -1 });
 
     res.json({
       status: 'success',
@@ -21,10 +21,7 @@ const getDestinationById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const destination = await prisma.destination.findUnique({
-      where: { id },
-      include: { universities: true },
-    });
+    const destination = await Destination.findById(id).populate('universities');
 
     if (!destination) {
       return next(new ApiError(404, 'Destination not found'));
@@ -39,6 +36,7 @@ const getDestinationById = async (req, res, next) => {
   }
 };
 
+// [CRITICAL] This exports the functions so the router can use them
 module.exports = {
   getDestinations,
   getDestinationById,

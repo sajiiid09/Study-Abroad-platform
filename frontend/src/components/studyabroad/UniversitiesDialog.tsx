@@ -3,10 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { GraduationCap, Trophy, MapPin } from "lucide-react";
 
 interface University {
+  _id: string;
   name: string;
-  worldRanking: number;
-  city: string;
-  specialties: string[];
+  ranking?: number;
+  location?: string;
+  specialties?: string[];
 }
 
 interface UniversitiesDialogProps {
@@ -31,7 +32,7 @@ export const UniversitiesDialog = ({ country, flag, universities, open, onOpenCh
         <div className="space-y-4 mt-4">
           {universities.map((uni, index) => (
             <div
-              key={uni.name}
+              key={uni._id || `${uni.name}-${index}`}
               className="p-4 rounded-xl border border-border bg-card hover:bg-secondary/30 transition-colors"
             >
               <div className="flex items-start justify-between gap-4">
@@ -42,22 +43,26 @@ export const UniversitiesDialog = ({ country, flag, universities, open, onOpenCh
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                     <MapPin className="w-4 h-4" />
-                    <span>{uni.city}</span>
+                    <span>{uni.location || "Location not available"}</span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {uni.specialties.map((specialty) => (
-                      <Badge key={specialty} variant="secondary" className="text-xs">
-                        {specialty}
-                      </Badge>
-                    ))}
-                  </div>
+                  {uni.specialties && uni.specialties.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {uni.specialties.map((specialty) => (
+                        <Badge key={specialty} variant="secondary" className="text-xs">
+                          {specialty}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Specialties coming soon</span>
+                  )}
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-1">
                     <Trophy className="w-5 h-5 text-primary" />
                   </div>
                   <span className="text-xs text-muted-foreground">World Rank</span>
-                  <span className="font-display font-bold text-lg text-foreground">#{uni.worldRanking}</span>
+                  <span className="font-display font-bold text-lg text-foreground">#{uni.ranking ?? "N/A"}</span>
                 </div>
               </div>
             </div>
