@@ -1,4 +1,4 @@
-const prisma = require('../config/prismaClient');
+const ConsultationBooking = require('../models/ConsultationBooking');
 const ApiError = require('../utils/ApiError');
 
 const createConsultation = async (req, res, next) => {
@@ -9,15 +9,13 @@ const createConsultation = async (req, res, next) => {
       return next(new ApiError(400, 'Name and email are required'));
     }
 
-    const consultation = await prisma.consultationBooking.create({
-      data: {
-        name,
-        email,
-        phone: phone || null,
-        message: message || null,
-        preferredDate: preferredDate ? new Date(preferredDate) : null,
-        userId: req.user ? req.user.id : null,
-      },
+    const consultation = await ConsultationBooking.create({
+      name,
+      email,
+      phone: phone || null,
+      message: message || null,
+      preferredDate: preferredDate ? new Date(preferredDate) : null,
+      userId: req.user ? req.user.id : null,
     });
 
     res.status(201).json({
@@ -32,10 +30,7 @@ const createConsultation = async (req, res, next) => {
 
 const getMyConsultations = async (req, res, next) => {
   try {
-    const consultations = await prisma.consultationBooking.findMany({
-      where: { userId: req.user.id },
-      orderBy: { createdAt: 'desc' },
-    });
+    const consultations = await ConsultationBooking.find({ userId: req.user.id }).sort({ createdAt: -1 });
 
     res.json({
       status: 'success',
