@@ -1,23 +1,20 @@
-const prisma = require('../config/prismaClient');
+const Course = require('../models/Course');
 const ApiError = require('../utils/ApiError');
 
 const getCourses = async (req, res, next) => {
   try {
     const { category, search } = req.query;
-    const where = {};
+    const query = {};
 
     if (category) {
-      where.category = category;
+      query.category = category;
     }
 
     if (search) {
-      where.title = { contains: search, mode: 'insensitive' };
+      query.title = { $regex: search, $options: 'i' };
     }
 
-    const courses = await prisma.course.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-    });
+    const courses = await Course.find(query).sort({ createdAt: -1 });
 
     res.json({
       status: 'success',
@@ -32,7 +29,7 @@ const getCourseById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const course = await prisma.course.findUnique({ where: { id } });
+    const course = await Course.findById(id);
 
     if (!course) {
       return next(new ApiError(404, 'Course not found'));
@@ -55,15 +52,13 @@ const createCourse = async (req, res, next) => {
       return next(new ApiError(400, 'Title, price, and category are required'));
     }
 
-    const course = await prisma.course.create({
-      data: {
-        title,
-        description: description || '',
-        price,
-        category,
-        instructorName: instructorName || 'Instructor',
-        thumbnailUrl: thumbnailUrl || null,
-      },
+    const course = await Course.create({
+      title,
+      description: description || '',
+      price,
+      category,
+      instructorName: instructorName || 'Instructor',
+      thumbnailUrl: thumbnailUrl || null,
     });
 
     res.status(201).json({

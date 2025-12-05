@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const prisma = require('../config/prismaClient');
+const User = require('../models/User');
 const ApiError = require('../utils/ApiError');
 const config = require('../config/env');
 
@@ -16,7 +16,7 @@ const protect = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, config.jwtSecret);
-    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    const user = await User.findById(decoded.userId);
 
     if (!user) {
       return next(new ApiError(401, 'User not found'));
