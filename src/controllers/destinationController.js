@@ -1,4 +1,5 @@
 const Destination = require('../models/Destination');
+const University = require('../models/University'); // [Fix] Essential for population
 const ApiError = require('../utils/ApiError');
 
 const getDestinations = async (req, res, next) => {
@@ -35,6 +36,7 @@ const getDestinationById = async (req, res, next) => {
   }
 };
 
+// [CRITICAL] This exports the functions so the router can use them
 module.exports = {
   getDestinations,
   getDestinationById,
