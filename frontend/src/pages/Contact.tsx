@@ -154,7 +154,7 @@ const Contact = () => {
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                        placeholder="John Doe"
+                        placeholder="Your name"
                       />
                     </div>
                     <div>
