@@ -3,11 +3,11 @@ const config = require('./env');
 
 async function connectDB() {
   try {
-    if (!config.databaseUrl) {
-      throw new Error('DATABASE_URL is not defined');
+    if (!config.mongoUri) {
+      throw new Error('MONGO_URI is not defined');
     }
 
-    await mongoose.connect(config.databaseUrl);
+    await mongoose.connect(config.mongoUri);
     // eslint-disable-next-line no-console
     console.log('✅ MongoDB connected via Mongoose');
   } catch (error) {
