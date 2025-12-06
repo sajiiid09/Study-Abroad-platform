@@ -9,6 +9,7 @@ const EnrollmentSchema = new Schema(
     courseId: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
     status: { type: String, enum: enrollmentStatuses, default: 'PENDING' },
     paymentStatus: { type: String, enum: paymentStatuses, default: 'NOT_REQUIRED' },
+    paymentMethod: { type: String, default: null },
     paymentReference: { type: String },
   },
   { timestamps: true }
