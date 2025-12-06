@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, GraduationCap, ChevronDown } from "lucide-react";
+import { Menu, X, GraduationCap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -16,8 +17,16 @@ const navLinks = [
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    setIsOpen(false);
+    navigate("/auth");
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border/50">
@@ -52,14 +61,30 @@ export const Navbar = () => {
 
           {/* Auth Buttons */}
           <div className="hidden lg:flex items-center gap-3">
-            <Link to="/auth">
-              <Button variant="ghost" size="sm">
-                Log In
-              </Button>
-            </Link>
-            <Link to="/auth?mode=register">
-              <Button size="sm">Get Started</Button>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <span className="text-sm text-foreground">Hi, {user?.name?.split(" ")[0] || "Student"}</span>
+                <Link to="/dashboard">
+                  <Button variant="ghost" size="sm">
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button size="sm" onClick={handleLogout}>
+                  Log Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm">
+                    Log In
+                  </Button>
+                </Link>
+                <Link to="/auth?mode=register">
+                  <Button size="sm">Get Started</Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -96,14 +121,29 @@ export const Navbar = () => {
                   </Link>
                 ))}
                 <div className="pt-4 flex flex-col gap-2 border-t border-border mt-4">
-                  <Link to="/auth" onClick={() => setIsOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      Log In
-                    </Button>
-                  </Link>
-                  <Link to="/auth?mode=register" onClick={() => setIsOpen(false)}>
-                    <Button className="w-full">Get Started</Button>
-                  </Link>
+                  {isAuthenticated ? (
+                    <>
+                      <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                        <Button variant="outline" className="w-full">
+                          Dashboard
+                        </Button>
+                      </Link>
+                      <Button className="w-full" onClick={handleLogout}>
+                        Log Out
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/auth" onClick={() => setIsOpen(false)}>
+                        <Button variant="outline" className="w-full">
+                          Log In
+                        </Button>
+                      </Link>
+                      <Link to="/auth?mode=register" onClick={() => setIsOpen(false)}>
+                        <Button className="w-full">Get Started</Button>
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>

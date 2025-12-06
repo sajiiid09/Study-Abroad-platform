@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import api from "@/api/client";
+import { useAuth } from "@/context/AuthContext";
 import {
   GraduationCap,
   BookOpen,
@@ -75,11 +77,22 @@ const statusConfig = {
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const user = {
-    name: "John Doe",
-    email: "john@example.com",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+  const displayName = user?.name || "Student";
+  const displayEmail = user?.email || "student@example.com";
+  const avatar = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80";
+
+  useEffect(() => {
+    api.get("/health").then((res) => {
+      console.log("Backend Health Check:", res.data);
+    });
+  }, []);
+
+  const handleSignOut = () => {
+    logout();
+    navigate("/auth");
   };
 
   const sidebarLinks = [
@@ -133,21 +146,19 @@ const Dashboard = () => {
           <div className="p-4 border-t border-border">
             <div className="flex items-center gap-3 mb-4">
               <img
-                src={user.avatar}
-                alt={user.name}
+                src={avatar}
+                alt={displayName}
                 className="w-10 h-10 rounded-full object-cover"
               />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
+                <p className="text-xs text-muted-foreground truncate">{displayEmail}</p>
               </div>
             </div>
-            <Link to="/">
-              <Button variant="outline" size="sm" className="w-full">
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </Button>
-            </Link>
+            <Button variant="outline" size="sm" className="w-full" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </Button>
           </div>
         </div>
       </aside>
@@ -180,8 +191,8 @@ const Dashboard = () => {
                 <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
               </button>
               <img
-                src={user.avatar}
-                alt={user.name}
+                src={avatar}
+                alt={displayName}
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-border"
               />
             </div>
@@ -197,7 +208,7 @@ const Dashboard = () => {
             className="bg-gradient-hero rounded-2xl p-6 lg:p-8"
           >
             <h2 className="font-display text-2xl lg:text-3xl font-bold text-primary-foreground mb-2">
-              Welcome back, {user.name.split(" ")[0]}! 👋
+              Welcome back, {displayName.split(" ")[0]}! 👋
             </h2>
             <p className="text-primary-foreground/80 mb-4">
               Track your applications, continue your courses, and manage your study abroad journey.
