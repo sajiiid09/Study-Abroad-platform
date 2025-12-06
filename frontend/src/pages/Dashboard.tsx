@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import api from "@/api/client";
 import {
   GraduationCap,
   BookOpen,
@@ -75,12 +76,28 @@ const statusConfig = {
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const user = {
-    name: "John Doe",
-    email: "john@example.com",
+  const [user, setUser] = useState({
+    name: "Student",
+    email: "student@example.com",
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
-  };
+  });
+
+  useEffect(() => {
+    api.get("/health").then((res) => {
+      console.log("Backend Health Check:", res.data);
+    });
+
+    const storedName = localStorage.getItem("userName");
+    const storedEmail = localStorage.getItem("userEmail");
+    const storedAvatar = localStorage.getItem("userAvatar");
+
+    setUser((prev) => ({
+      ...prev,
+      name: storedName || prev.name,
+      email: storedEmail || prev.email,
+      avatar: storedAvatar || prev.avatar,
+    }));
+  }, []);
 
   const sidebarLinks = [
     { icon: BookOpen, label: "My Applications", active: true },
