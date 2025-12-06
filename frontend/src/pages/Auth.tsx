@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import api from "@/api/client";
+import { useAuth } from "@/context/AuthContext";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -11,6 +13,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(searchParams.get("mode") !== "register");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { login: authLogin } = useAuth();
   
   const [formData, setFormData] = useState({
     name: "",
@@ -26,22 +29,35 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate authentication
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const endpoint = isLogin ? "/auth/login" : "/auth/register";
+      const payload = isLogin
+        ? {
+            email: formData.email,
+            password: formData.password,
+          }
+        : formData;
 
-    if (isLogin) {
-      toast.success("Welcome back!", {
-        description: "You have been logged in successfully.",
+      const response = await api.post(endpoint, payload);
+      const { user, token } = response.data.data;
+
+      authLogin(token, user);
+
+      toast.success(isLogin ? "Welcome back!" : "Account created!", {
+        description: isLogin
+          ? "You have been logged in successfully."
+          : "Your account is ready. Redirecting to your dashboard...",
       });
+
       navigate("/dashboard");
-    } else {
-      toast.success("Account created!", {
-        description: "Please check your email to verify your account.",
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Something went wrong. Please try again.";
+      toast.error("Authentication failed", {
+        description: message,
       });
-      setIsLogin(true);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -91,7 +107,7 @@ const Auth = () => {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full pl-12 pr-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                    placeholder="John Doe"
+                    placeholder="Your name"
                   />
                 </div>
               </div>
