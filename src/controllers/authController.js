@@ -10,6 +10,13 @@ function generateToken(userId) {
   });
 }
 
+const buildUserResponse = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+});
+
 const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
@@ -32,18 +39,12 @@ const register = async (req, res, next) => {
       role: 'STUDENT',
     });
 
-    const token = generateToken(user.id);
+    const token = generateToken(user._id);
 
     res.status(201).json({
       status: 'success',
-      message: 'User registered successfully',
       data: {
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
+        user: buildUserResponse(user),
         token,
       },
     });
@@ -73,18 +74,12 @@ const login = async (req, res, next) => {
       return next(new ApiError(401, 'Invalid credentials'));
     }
 
-    const token = generateToken(user.id);
+    const token = generateToken(user._id);
 
     res.json({
       status: 'success',
-      message: 'Logged in successfully',
       data: {
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
+        user: buildUserResponse(user),
         token,
       },
     });
@@ -100,12 +95,7 @@ const getMe = async (req, res, next) => {
     res.json({
       status: 'success',
       data: {
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
+        user: buildUserResponse(user),
       },
     });
   } catch (error) {
