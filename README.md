@@ -7,7 +7,7 @@
 * Node.js + Express.js
 * MongoDB + **Mongoose** (active ORM)
 * JWT Authentication
-* Runs on [http://localhost:5000](http://localhost:5000)
+* Runs on [http://localhost:5000](http://localhost:5001)
 
 ### Frontend
 
