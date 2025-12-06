@@ -31,6 +31,7 @@ const initiateEnrollment = async (req, res, next) => {
       courseId,
       status: 'PENDING',
       paymentStatus: 'PENDING',
+      paymentMethod: null,
       paymentReference: null,
     });
 
@@ -71,6 +72,7 @@ const confirmPayment = async (req, res, next) => {
       {
         status: 'ACTIVE',
         paymentStatus: 'PAID',
+        paymentMethod: paymentMethod || null,
         paymentReference: reference,
       },
       { new: true }

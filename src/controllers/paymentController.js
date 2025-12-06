@@ -12,7 +12,7 @@ const getMyPayments = async (req, res, next) => {
     const payments = enrollments.map((enrollment) => {
       const obj = enrollment.toObject({ virtuals: true });
       const course = obj.courseId || null;
-      const methodGuess = obj.paymentReference?.toLowerCase() || '';
+      const methodGuess = obj.paymentMethod?.toLowerCase?.() || obj.paymentReference?.toLowerCase?.() || '';
 
       return {
         _id: obj._id,
@@ -23,7 +23,7 @@ const getMyPayments = async (req, res, next) => {
           ? 'bkash'
           : methodGuess.includes('stripe')
             ? 'stripe'
-            : 'demo',
+            : obj.paymentMethod || 'demo',
         course: course
           ? {
               _id: course._id,

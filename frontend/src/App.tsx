@@ -10,6 +10,7 @@ import StudyAbroad from "./pages/StudyAbroad";
 import Success from "./pages/Success";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
+import PaymentPage from "./pages/PaymentPage";
 import DashboardLayout from "./pages/dashboard/DashboardLayout";
 import OverviewTab from "./pages/dashboard/OverviewTab";
 import CoursesTab from "./pages/dashboard/CoursesTab";
@@ -34,6 +35,14 @@ const App = () => (
           <Route path="/success" element={<Success />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/auth" element={<Auth />} />
+          <Route
+            path="/payment"
+            element={
+              <ProtectedRoute>
+                <PaymentPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard/*"
             element={

@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Clock, Users, Star, Search } from "lucide-react";
-import { EnrollmentDialog } from "@/components/courses/EnrollmentDialog";
 import { getCourses } from "@/services/api";
+import { useNavigate } from "react-router-dom";
 
 interface Course {
   _id: string;
@@ -24,9 +24,8 @@ const Courses = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -44,8 +43,7 @@ const Courses = () => {
   }, []);
 
   const handleEnrollClick = (course: Course) => {
-    setSelectedCourse(course);
-    setDialogOpen(true);
+    navigate(`/payment?courseId=${course._id}`);
   };
 
   const filteredCourses = courses.filter((course) => {
@@ -176,11 +174,6 @@ const Courses = () => {
         </div>
       </section>
 
-      <EnrollmentDialog
-        course={selectedCourse}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-      />
     </Layout>
   );
 };
