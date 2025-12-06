@@ -19,7 +19,7 @@
 ```
 cd backend
 npm install
-npm run dev   # backend runs on port 5000
+npm run dev   # backend runs on port 5001
 
 cd frontend
 npm install
