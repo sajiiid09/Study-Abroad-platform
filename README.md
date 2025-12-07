@@ -7,7 +7,7 @@
 * Node.js + Express.js
 * MongoDB + **Mongoose** (active ORM)
 * JWT Authentication
-* Runs on [http://localhost:5000](http://localhost:5000)
+* Runs on [http://localhost:5001](http://localhost:5001)
 
 ### Frontend
 
@@ -19,7 +19,7 @@
 ```
 cd backend
 npm install
-npm run dev   # backend runs on port 5000
+npm run dev   # backend runs on port 5001
 
 cd frontend
 npm install
